@@ -1,22 +1,31 @@
+---
+const { title = "Nexus" } = Astro.props;
+---
+
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
-	</head>
-	<body>
-		<slot />
-	</body>
-</html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{title}</title>
+  </head>
 
-<style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
-</style>
+  <body style="margin:0; background:#0b1220; color:#e5e7eb; font-family: ui-sans-serif, system-ui;">
+    <main style="max-width:1100px; margin:0 auto; padding:18px;">
+      <header style="display:flex; gap:12px; align-items:center; justify-content:space-between; margin-bottom:14px;">
+        <div style="font-weight:800; letter-spacing:.2px;">Nexus</div>
+        <nav style="display:flex; gap:10px; font-size:14px; opacity:.9;">
+          <a href="/" style="color:inherit; text-decoration:none; opacity:.85;">Home</a>
+          <a href="/connectors" style="color:inherit; text-decoration:none; opacity:.85;">Connectors</a>
+          <a href="/scan" style="color:inherit; text-decoration:none; opacity:.85;">Scan</a>
+        </nav>
+      </header>
+
+      <slot />
+
+      <footer style="margin-top:18px; padding-top:14px; border-top:1px solid rgba(148,163,184,.18); opacity:.7; font-size:12px;">
+        Senergy demo UI (Astro)
+      </footer>
+    </main>
+  </body>
+</html>

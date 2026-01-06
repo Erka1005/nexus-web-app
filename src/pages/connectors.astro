@@ -1,0 +1,87 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+type Connector = {
+  id: number;
+  station_id: number;
+  evse_id: number;
+  charge_point_id: string;
+  standard: string;
+  format: string;
+  qr_code: string;
+  status: string;
+  power_type: string;
+  max_voltage: number;
+  max_amperage: number;
+  max_electric_power: number;
+  tariff_ids: number[];
+  terms_and_conditions: string | null;
+  last_updated: string;
+};
+
+let connectors: Connector[] = [];
+let errorMsg = "";
+
+try {
+  const res = await fetch(`${Astro.url.origin}/api/connectors`, {
+    headers: { Accept: "application/json" },
+  });
+
+  if (!res.ok) {
+    errorMsg = `API error: ${res.status} ${res.statusText}`;
+  } else {
+    connectors = (await res.json()) as Connector[];
+  }
+} catch (e: any) {
+  errorMsg = e?.message ?? "Failed to load connectors";
+}
+
+function fmtPower(w: number) {
+  const n = Number(w);
+  if (!Number.isFinite(n)) return "-";
+  if (n >= 1000) return `${(n / 1000).toFixed(1)} kW`;
+  return `${n} W`;
+}
+---
+
+<Layout title="Connectors">
+  <h1 style="font-size:22px; margin:0 0 10px;">Connectors</h1>
+
+  {errorMsg ? (
+    <div style="padding:14px; border-radius:12px; background:rgba(239,68,68,.10); border:1px solid rgba(239,68,68,.35);">
+      {errorMsg}
+    </div>
+  ) : (
+    <>
+      <div style="opacity:.85; margin-bottom:10px;">Total: <b>{connectors.length}</b></div>
+
+      <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:12px;">
+        {connectors.map((c) => (
+          <a
+            href={`/c/${encodeURIComponent(c.qr_code)}`}
+            style="text-decoration:none; color:inherit;"
+          >
+            <article style="border:1px solid rgba(148,163,184,.18); background:rgba(15,23,42,.65); border-radius:16px; padding:14px;">
+              <div style="display:flex; justify-content:space-between; gap:10px;">
+                <div style="font-weight:800;">#{c.id} • Station {c.station_id}</div>
+                <span style="font-size:12px; opacity:.85;">{c.status}</span>
+              </div>
+
+              <div style="margin-top:6px; font-size:13px; opacity:.85;">
+                QR: <b>{c.qr_code}</b>
+              </div>
+
+              <div style="margin-top:8px; font-size:13px; opacity:.9;">
+                {c.power_type} • {fmtPower(c.max_electric_power)} • {c.max_voltage}V • {c.max_amperage}A
+              </div>
+
+              <div style="margin-top:8px; font-size:12px; opacity:.7;">
+                Click to open detail
+              </div>
+            </article>
+          </a>
+        ))}
+      </div>
+    </>
+  )}
+</Layout>
