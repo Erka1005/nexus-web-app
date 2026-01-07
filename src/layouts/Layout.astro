@@ -1,5 +1,6 @@
 ---
 const { title = "Nexus Charge" } = Astro.props;
+import "../styles/global.css";
 ---
 
 <!doctype html>
@@ -10,15 +11,65 @@ const { title = "Nexus Charge" } = Astro.props;
     <title>{title}</title>
   </head>
 
-  <body style="margin:0; background:#0b1220; color:#e5e7eb; font-family: ui-sans-serif, system-ui;">
-    <main style="max-width:980px; margin:0 auto; padding:18px;">
-      <header style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px;">
-        <div style="font-weight:800;">Nexus net-zero</div>
-        <nav style="display:flex; gap:10px; font-size:14px; opacity:.9;">
-          <a href="/" style="color:inherit; text-decoration:none; opacity:.85;">Home</a>
-        </nav>
+  <body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
+    <!-- Background subtle gradient blobs -->
+    <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+      <div class="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-blue-200/40 blur-3xl"></div>
+      <div class="absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-indigo-200/40 blur-3xl"></div>
+    </div>
+
+    <!-- Page container -->
+    <div class="mx-auto flex min-h-screen max-w-6xl flex-col px-4 sm:px-6 lg:px-8">
+      <!-- Header -->
+      <header class="sticky top-0 z-20 -mx-4 border-b border-slate-200/70 bg-slate-50/80 px-4 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+        <div class="flex h-14 items-center justify-between">
+          <!-- Brand -->
+          <a href="/" class="flex items-center gap-3">
+            <!-- Logo (public/logo.png) -->
+            <img
+              src="/logo.png"
+              alt="Nexus net-zero"
+              class="h-10 w-auto object-contain"
+              loading="eager"
+            />
+        
+          </a>
+
+          <!-- Nav -->
+          <nav class="flex items-center gap-2 sm:gap-3">
+            <a
+              href="/"
+              class="rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition"
+            >
+              Home
+            </a>
+
+            <a
+              href="/connectors"
+              class="rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition"
+            >
+              Connectors
+            </a>
+
+            <a
+              href="/scan"
+              class="hidden rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition sm:inline-flex"
+            >
+              Scan
+            </a>
+          </nav>
+        </div>
       </header>
-      <slot />
-    </main>
+
+      <!-- Main -->
+      <main class="flex-1 py-6 sm:py-8">
+        <slot />
+      </main>
+
+      <!-- Footer -->
+      <footer class="py-6 text-center text-xs text-slate-500">
+        © {new Date().getFullYear()} Nexus net-zero
+      </footer>
+    </div>
   </body>
 </html>
