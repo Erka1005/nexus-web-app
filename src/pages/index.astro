@@ -3,14 +3,15 @@ import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout title="Home">
-  
-  <p style="opacity:.85; margin:0;">
-    Go to the Connector link: <b>/c/&lt;qr_code&gt;</b>
+  <h1 class="text-2xl font-semibold">Nexus net-zero</h1>
+  <p class="mt-2 text-slate-600">
+    Connector page: <code class="rounded bg-slate-100 px-2 py-1">/c/&lt;qr_code&gt;</code>
   </p>
 
-  <div
-    style="margin-top:12px; padding:12px; border-radius:14px; border:1px solid rgba(148,163,184,.18); background:rgba(255,255,255,.6);"
+  <a
+    href="/c/1299489701"
+    class="mt-4 inline-flex rounded-xl bg-blue-600 px-4 py-2 text-white font-semibold hover:bg-blue-500 transition"
   >
-    Example: <code>/c/1299489701</code>
-  </div>
+    Open example connector
+  </a>
 </Layout>
