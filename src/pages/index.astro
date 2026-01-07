@@ -1,8 +1,14 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import ScanAndCharge from "../components/ScanAndCharge";
 ---
 
-<Layout title="Home - Scan & Charge">
-  <ScanAndCharge client:load />
+<Layout title="Home">
+  <h1 style="font-size:22px; margin:0 0 10px;">Senergy Charging</h1>
+  <p style="opacity:.85; margin:0;">
+    Connector линкээр орно: <b>/c/&lt;qr_code&gt;</b>
+  </p>
+
+  <div style="margin-top:12px; padding:12px; border-radius:14px; border:1px solid rgba(148,163,184,.18); background:rgba(15,23,42,.6);">
+    Жишээ: <code>/c/1299489701</code>
+  </div>
 </Layout>

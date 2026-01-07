@@ -11,8 +11,6 @@ export const GET: APIRoute = async () => {
       status: upstream.status,
       headers: {
         "Content-Type": upstream.headers.get("content-type") ?? "application/json",
-        // Cache хүсвэл:
-        // "Cache-Control": "public, max-age=30",
       },
     });
   } catch (e: any) {

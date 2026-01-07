@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 
-export const POST: APIRoute = async ({ params }) => {
+export const GET: APIRoute = async ({ params }) => {
   try {
     const sessionId = params.session_id;
     if (!sessionId) {
@@ -11,11 +11,8 @@ export const POST: APIRoute = async ({ params }) => {
     }
 
     const upstream = await fetch(
-      `https://api.senergy.mn/commands/stop-session/${encodeURIComponent(sessionId)}`,
-      {
-        method: "POST",
-        headers: { Accept: "application/json" },
-      }
+      `https://api.senergy.mn/session/${encodeURIComponent(sessionId)}`,
+      { headers: { Accept: "application/json" } }
     );
 
     const text = await upstream.text();
@@ -24,8 +21,8 @@ export const POST: APIRoute = async ({ params }) => {
       headers: { "Content-Type": upstream.headers.get("content-type") ?? "application/json" },
     });
   } catch (e: any) {
-    return new Response(JSON.stringify({ error: e?.message ?? "Server error" }), {
-      status: 500,
+    return new Response(JSON.stringify({ error: e?.message ?? "Upstream error" }), {
+      status: 502,
       headers: { "Content-Type": "application/json" },
     });
   }

@@ -20,8 +20,6 @@ export const POST: APIRoute = async ({ request }) => {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        // Authorization хэрэгтэй бол:
-        // Authorization: `Bearer ${import.meta.env.SENERGY_TOKEN}`,
       },
       body: JSON.stringify({ station_id, evse_id, connector_id }),
     });

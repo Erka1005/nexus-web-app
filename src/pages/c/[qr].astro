@@ -25,9 +25,8 @@ let connector: Connector | null = null;
 let errorMsg = "";
 
 try {
-  const res = await fetch(`${Astro.url.origin}/api/connectors`, {
-    headers: { Accept: "application/json" },
-  });
+  // Proxy-оор татна (CORS-safe)
+  const res = await fetch(`${Astro.url.origin}/api/connectors`, { headers: { Accept: "application/json" } });
   if (!res.ok) {
     errorMsg = `API error: ${res.status} ${res.statusText}`;
   } else {
@@ -37,68 +36,62 @@ try {
 } catch (e: any) {
   errorMsg = e?.message ?? "Failed to load connector";
 }
+
+function fmtPower(w: number) {
+  const n = Number(w);
+  if (!Number.isFinite(n)) return "-";
+  if (n >= 1000) return `${(n / 1000).toFixed(1)} kW`;
+  return `${n} W`;
+}
 ---
 
 <Layout title={`Connector ${qr}`}>
-  <h1 style="font-size:22px; margin:0 0 10px;">Connector detail</h1>
+  <h1 style="font-size:22px; margin:0 0 8px;">Connector</h1>
   <div style="opacity:.85; margin-bottom:12px;">QR: <b>{qr}</b></div>
 
   {errorMsg ? (
-    <div style="padding:14px; border-radius:12px; background:rgba(239,68,68,.10); border:1px solid rgba(239,68,68,.35);">
+    <div style="padding:14px; border-radius:14px; background:rgba(239,68,68,.10); border:1px solid rgba(239,68,68,.35);">
       {errorMsg}
     </div>
   ) : !connector ? (
-    <div style="padding:14px; border-radius:12px; background:rgba(251,191,36,.10); border:1px solid rgba(251,191,36,.25);">
-      Connector not found for this QR.
+    <div style="padding:14px; border-radius:14px; background:rgba(251,191,36,.10); border:1px solid rgba(251,191,36,.25);">
+      Connector олдсонгүй.
     </div>
   ) : (
     <>
-      <div style="border:1px solid rgba(148,163,184,.18); background:rgba(15,23,42,.65); border-radius:16px; padding:14px;">
-        <pre style="white-space:pre-wrap; margin:0; font-size:13px; opacity:.92;">
-{JSON.stringify(connector, null, 2)}
-        </pre>
-      </div>
-
-      <div style="margin-top:14px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-        <button id="btnStart" style="padding:10px 12px; border-radius:10px; border:1px solid rgba(34,197,94,.35); background:rgba(34,197,94,.12); color:inherit; cursor:pointer;">
-          Start Charge
-        </button>
-
-        <button id="btnStop" disabled style="padding:10px 12px; border-radius:10px; border:1px solid rgba(239,68,68,.35); background:rgba(239,68,68,.12); color:inherit; cursor:pointer; opacity:.5;">
-          Stop Charge
-        </button>
-
-        <div style="opacity:.85; font-size:14px;">
-          Session: <b id="sessionId">-</b>
+      <div style="padding:14px; border-radius:16px; border:1px solid rgba(148,163,184,.18); background:rgba(15,23,42,.65);">
+        <div style="display:grid; gap:6px; font-size:14px; opacity:.95;">
+          <div><b>ID:</b> {connector.id}</div>
+          <div><b>Station:</b> {connector.station_id}</div>
+          <div><b>EVSE:</b> {connector.evse_id}</div>
+          <div><b>ChargePoint:</b> {connector.charge_point_id}</div>
+          <div><b>Status:</b> {connector.status}</div>
+          <div><b>Power:</b> {connector.power_type} • {fmtPower(connector.max_electric_power)} • {connector.max_voltage}V • {connector.max_amperage}A</div>
+          <div><b>Tariff IDs:</b> {connector.tariff_ids?.length ? connector.tariff_ids.join(", ") : "-"}</div>
+          <div><b>Updated:</b> {connector.last_updated}</div>
         </div>
       </div>
 
-      <div id="msg" style="margin-top:10px; font-size:13px; opacity:.85;"></div>
+      <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <button id="btnStart"
+          style="padding:10px 12px; border-radius:12px; border:1px solid rgba(34,197,94,.35); background:rgba(34,197,94,.12); color:inherit; cursor:pointer;">
+          Start Charging
+        </button>
+
+        <div id="msg" style="opacity:.85; font-size:13px;"></div>
+      </div>
 
       <script define:vars={{ connector }}>
-        const btnStart = document.getElementById("btnStart");
-        const btnStop = document.getElementById("btnStop");
-        const sessionEl = document.getElementById("sessionId");
         const msgEl = document.getElementById("msg");
+        const btnStart = document.getElementById("btnStart");
 
         function setMsg(t) { msgEl.textContent = t || ""; }
 
-        function setSession(id) {
-          sessionEl.textContent = id || "-";
-          const has = !!id;
-          btnStop.disabled = !has;
-          btnStop.style.opacity = has ? "1" : ".5";
-          btnStart.disabled = has; // эхэлсэн үед дахиж start хийхгүй
-          btnStart.style.opacity = has ? ".5" : "1";
-        }
-
-        // Optional: localStorage-д хадгалах
-        const key = `senergy_session_${connector.qr_code}`;
-        const saved = localStorage.getItem(key);
-        if (saved) setSession(saved);
-
         btnStart.addEventListener("click", async () => {
           setMsg("Starting...");
+          btnStart.disabled = true;
+          btnStart.style.opacity = ".6";
+
           try {
             const res = await fetch("/api/start-session", {
               method: "POST",
@@ -113,37 +106,16 @@ try {
             const data = await res.json().catch(() => ({}));
             if (!res.ok) throw new Error(data?.error || `Start failed: ${res.status}`);
 
-            // ✅ API чинь session_id-г өөр нэрээр өгч магадгүй.
-            const sid = data?.session_id ?? data?.id ?? data?.session?.id;
-            if (!sid) throw new Error("Started but session_id not returned. Check API response.");
+            // start-session response дээр session_id ямар нэртэй ирэхийг 100% мэдэхгүй тул хэдэн боломж шалгалаа
+            const sid = data?.session_id ?? data?.id ?? data?.session?.id ?? data?.data?.session_id;
+            if (!sid) throw new Error("Start амжилттай боловч session_id ирсэнгүй. (start-session response-оо paste хийгээрэй)");
 
-            localStorage.setItem(key, String(sid));
-            setSession(String(sid));
-            setMsg("Started.");
+            // Session page руу оруулна
+            window.location.href = `/session/${encodeURIComponent(String(sid))}`;
           } catch (e) {
             setMsg(e?.message || "Start failed");
-          }
-        });
-
-        btnStop.addEventListener("click", async () => {
-          const sid = localStorage.getItem(key);
-          if (!sid) return;
-
-          setMsg("Stopping...");
-          try {
-            const res = await fetch(`/api/stop-session/${encodeURIComponent(sid)}`, {
-              method: "POST",
-              headers: { Accept: "application/json" },
-            });
-
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok) throw new Error(data?.error || `Stop failed: ${res.status}`);
-
-            localStorage.removeItem(key);
-            setSession("");
-            setMsg("Stopped.");
-          } catch (e) {
-            setMsg(e?.message || "Stop failed");
+            btnStart.disabled = false;
+            btnStart.style.opacity = "1";
           }
         });
       </script>
